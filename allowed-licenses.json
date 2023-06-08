@@ -1,0 +1,64 @@
+{
+  "allowedLicenses": [
+    {"moduleLicense": "MIT License"},
+    {"moduleLicense": "Bouncy Castle Licence"},
+    {"moduleLicense": "Apache License, Version 2.0"},
+    {"moduleLicense": "Apache Software License, Version 1.1"},
+    {"moduleLicense": "The 2-Clause BSD License"},
+    {"moduleLicense": "The 3-Clause BSD License"},
+    {"moduleLicense": "Mozilla Public License, Version 2.0"},
+    {"moduleLicense": "Eclipse Public License - v 1.0"},
+    {"moduleLicense": "Creative Commons Legal Code"},
+    {"moduleLicense": "COMMON DEVELOPMENT AND DISTRIBUTION LICENSE (CDDL) Version 1.0"},
+    {
+        "moduleLicense": null, /* MIT License */
+        "moduleVersion": ".*",
+        "moduleName": "cafe.cryptography:curve25519-elisabeth"
+    },
+    {
+        "moduleLicense": null, /*  Apache-2.0 license  */
+        "moduleVersion": ".*",
+        "moduleName": "com.github.ben-manes:caffeine"
+    },
+    {
+        "moduleLicense": null, /* Apache-2.0 license */
+        "moduleVersion": ".*",
+        "moduleName": "net.jcip:jcip-annotations"
+    },
+    {
+        "moduleLicense": null,  /*  Apache-2.0 license  */
+        "moduleVersion": ".*",
+        "moduleName": "org.jetbrains.kotlin:kotlin-bom"
+    },
+    {
+        "moduleLicense": null, /* EPL 2.0 */
+        "moduleVersion": ".*",
+        "moduleName": "org.junit:junit-bom"
+    },
+    {
+        "moduleLicense": null, /* BSD 3-clause */
+        "moduleVersion": ".*",
+        "moduleName": "org.ow2.asm:asm-bom"
+    },
+    {
+        "moduleLicense": null, /* MIT license */
+        "moduleVersion": ".*",
+        "moduleName": "tech.pegasys:jblst"
+    },
+    {
+        "moduleLicense": null,  /* Apache-2.0 license */
+        "moduleVersion": ".*",
+        "moduleName": "tech.pegasys:jc-kzg-4844"
+    },
+    {
+        "moduleLicense": null,  /* MIT license */
+        "moduleVersion": ".*",
+        "moduleName": "com.swiftcryptollc:kyberJCE"
+    },
+    {
+        "moduleLicense": null,  /* Public Domain / Apache 2.0 */
+        "moduleVersion": ".*",
+        "moduleName": "net.thiim.dilithium:dilithium-java"
+    }
+  ]
+}
