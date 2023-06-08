@@ -6,7 +6,7 @@
 
 ### Gradle Groovy DSL
 ```
-implementation 'com.weavechain:api1.0'
+implementation 'com.weavechain:api:1.0'
 ```
 
 ### Gradle Kotlin DSL

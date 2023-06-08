@@ -183,7 +183,7 @@ tasks.withType<PublishToMavenRepository> {
 licenseReport {
     filters = arrayOf<DependencyFilter>(
             LicenseBundleNormalizer(
-                    "$rootDir/license-normalizer-bundle.json",
+                    "$rootDir/normalizer-bundle.json",
                     true
             )
     )
