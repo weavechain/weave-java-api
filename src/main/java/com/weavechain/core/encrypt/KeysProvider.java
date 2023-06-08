@@ -91,7 +91,7 @@ public class KeysProvider {
                     try {
                         Security.addProvider(new KyberJCE());
                     } catch (Throwable e) {
-                        logger.error("Failed to initialize Kyber", e);
+                        logger.warn("Failed initializing KyberJCE, quantum resistant auth not usable\nUse --add-opens=java.base/sun.security.x509=ALL-UNNAMED --add-exports=java.base/sun.security.util=ALL-UNNAMED");
                     }
                 }
             }

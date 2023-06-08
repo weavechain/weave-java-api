@@ -94,10 +94,14 @@ public class HttpApiClient extends WeaveApiClientV1 {
         }
     }
 
+    private static OperationResult buildOperationResult(HttpReply reply) {
+        return reply != null ? OperationResultSerializer.from(reply.getBody()) : new AccessError(null, "Request failed");
+    }
+
     public OperationResult syncVersion() {
         String url = apiUrl + "/" + RequestType.version.name();
         HttpReply reply = httpTransport.syncGet(url);
-        return OperationResultSerializer.from(reply.getBody());
+        return buildOperationResult(reply);
     }
 
     @Override
@@ -108,7 +112,7 @@ public class HttpApiClient extends WeaveApiClientV1 {
     public OperationResult syncPing() {
         String url = apiUrl + "/" + getClientVersion() + "/" + RequestType.ping.name();
         HttpReply reply = httpTransport.syncGet(url);
-        return OperationResultSerializer.from(reply.getBody());
+        return buildOperationResult(reply);
     }
 
     @Override
@@ -119,7 +123,7 @@ public class HttpApiClient extends WeaveApiClientV1 {
     public OperationResult syncPublicKey() {
         String url = apiUrl + "/" + getClientVersion() + "/" + RequestType.public_key.name();
         HttpReply reply = httpTransport.syncGet(url);
-        return OperationResultSerializer.from(reply.getBody());
+        return buildOperationResult(reply);
     }
 
     @Override
@@ -130,7 +134,7 @@ public class HttpApiClient extends WeaveApiClientV1 {
     public OperationResult syncSigKey() {
         String url = apiUrl + "/" + getClientVersion() + "/" + RequestType.sig_key.name();
         HttpReply reply = httpTransport.syncGet(url);
-        return OperationResultSerializer.from(reply.getBody());
+        return buildOperationResult(reply);
     }
 
     @Override
@@ -143,7 +147,7 @@ public class HttpApiClient extends WeaveApiClientV1 {
         Map<String, Object> params = new HashMap<>();
         params.put("account", account);
         HttpReply reply = httpTransport.syncPost(url, params);
-        return OperationResultSerializer.from(reply.getBody());
+        return buildOperationResult(reply);
     }
 
     @Override
@@ -154,7 +158,7 @@ public class HttpApiClient extends WeaveApiClientV1 {
     public OperationResult syncRsaKey() {
         String url = apiUrl + "/" + getClientVersion() + "/" + RequestType.rsa_key.name();
         HttpReply reply = httpTransport.syncGet(url);
-        return OperationResultSerializer.from(reply.getBody());
+        return buildOperationResult(reply);
     }
 
     public OperationResult syncPostRsaKey(String account) {
@@ -162,7 +166,7 @@ public class HttpApiClient extends WeaveApiClientV1 {
         Map<String, Object> params = new HashMap<>();
         params.put("account", account);
         HttpReply reply = httpTransport.syncPost(url, params);
-        return OperationResultSerializer.from(reply.getBody());
+        return buildOperationResult(reply);
     }
 
     @Override
@@ -178,7 +182,7 @@ public class HttpApiClient extends WeaveApiClientV1 {
     public OperationResult syncBlsKey() {
         String url = apiUrl + "/" + getClientVersion() + "/" + RequestType.bls_key.name();
         HttpReply reply = httpTransport.syncGet(url);
-        return OperationResultSerializer.from(reply.getBody());
+        return buildOperationResult(reply);
     }
 
     public OperationResult syncPostBlsKey(String account) {
@@ -186,7 +190,7 @@ public class HttpApiClient extends WeaveApiClientV1 {
         Map<String, Object> params = new HashMap<>();
         params.put("account", account);
         HttpReply reply = httpTransport.syncPost(url, params);
-        return OperationResultSerializer.from(reply.getBody());
+        return buildOperationResult(reply);
     }
 
     @Override
@@ -224,7 +228,7 @@ public class HttpApiClient extends WeaveApiClientV1 {
             addDelegateSignature(params);
 
             HttpReply reply = httpTransport.syncPost(url, params);
-            OperationResult result = reply != null ? OperationResultSerializer.from(reply.getBody()) : null;
+            OperationResult result = reply != null ? buildOperationResult(reply) : null;
             if (result != null && result.getData() != null) {
                 return Session.parse(result.getData(), getApiContext());
             } else {
@@ -254,7 +258,7 @@ public class HttpApiClient extends WeaveApiClientV1 {
             Map<String, Object> params = buildProxyLoginParams(node, organization, account, scopes);
 
             HttpReply reply = httpTransport.syncPost(url, params);
-            OperationResult result = reply != null ? OperationResultSerializer.from(reply.getBody()) : null;
+            OperationResult result = reply != null ? buildOperationResult(reply) : null;
 
             if (result instanceof Forward) {
                 String decryptedResult = decryptProxyParams(result);
@@ -285,7 +289,7 @@ public class HttpApiClient extends WeaveApiClientV1 {
             params.put("organization", session.getOrganization());
             params.put("account", session.getAccount());
             HttpReply reply = getAuthPost(session, url, params, null);
-            return OperationResultSerializer.from(reply.getBody());
+            return buildOperationResult(reply);
         } catch (Exception e) {
             logger.error("Failed logout", e);
             return new AccessError(null, e.toString());
@@ -307,7 +311,7 @@ public class HttpApiClient extends WeaveApiClientV1 {
             params.put("options", termsOptions);
             params.put("signature", sign(termsOptions));
             HttpReply reply = getAuthPost(session, url, params, null);
-            return OperationResultSerializer.from(reply.getBody());
+            return buildOperationResult(reply);
         } catch (Exception e) {
             logger.error("Failed terms", e);
             return new AccessError(null, e.toString());
@@ -333,7 +337,7 @@ public class HttpApiClient extends WeaveApiClientV1 {
 
                 HttpReply reply = httpTransport.syncPost(encUrl, encParams);
 
-                OperationResult result = OperationResultSerializer.from(reply.getBody());
+                OperationResult result = buildOperationResult(reply);
 
                 if (result.getData() != null) {
                     String decoded = decryptResults(result);
@@ -406,7 +410,7 @@ public class HttpApiClient extends WeaveApiClientV1 {
                 String encUrl = apiUrl + "/" + getClientVersion() + "/" + RequestType.enc.name();
                 HttpReply reply = httpTransport.syncDownloadPost(encUrl, encParams, bufferSize, callback);
 
-                OperationResult result = OperationResultSerializer.from(reply.getBody());
+                OperationResult result = buildOperationResult(reply);
 
                 if (result.getData() != null) {
                     String decoded = decryptResults(result);
@@ -470,7 +474,7 @@ public class HttpApiClient extends WeaveApiClientV1 {
         Map<String, Object> fwdParams = encryptProxyParams(session, url, params, session.getProxyNode(), session.getTempKey());
 
         HttpReply reply = httpTransport.syncPost(fwdUrl, fwdParams);
-        OperationResult result = reply != null ? OperationResultSerializer.from(reply.getBody()) : null;
+        OperationResult result = reply != null ? buildOperationResult(reply) : null;
 
         if (result instanceof Forward) {
             String decryptedResult = decryptProxyParams(result);
@@ -488,7 +492,7 @@ public class HttpApiClient extends WeaveApiClientV1 {
             params.put("organization", session.getOrganization());
             params.put("account", session.getAccount());
             HttpReply reply = authPost(requestType, session, url, params, null);
-            return OperationResultSerializer.from(reply.getBody());
+            return buildOperationResult(reply);
         } catch (Exception e) {
             logger.error("Failed status", e);
             return new AccessError(null, e.toString());
@@ -514,7 +518,7 @@ public class HttpApiClient extends WeaveApiClientV1 {
             }
             HttpReply reply = authPost(requestType, session, url, params, options != null ? options.getCreateTimeoutSec() : null);
             if (reply != null) {
-                return OperationResultSerializer.from(reply.getBody());
+                return buildOperationResult(reply);
             } else {
                 return new AccessError(null, "Failed building reply");
             }
@@ -542,7 +546,7 @@ public class HttpApiClient extends WeaveApiClientV1 {
                 params.put("options", Utils.getGson().toJson(options));
             }
             HttpReply reply = authPost(requestType, session, url, params, options != null ? options.getDropTimeoutSec() : null);
-            return OperationResultSerializer.from(reply.getBody());
+            return buildOperationResult(reply);
         } catch (Exception e) {
             logger.error("Failed create", e);
             return new AccessError(null, e.toString());
@@ -565,7 +569,7 @@ public class HttpApiClient extends WeaveApiClientV1 {
             params.put("table", table);
             params.put("layout", layout);
             HttpReply reply = authPost(requestType, session, url, params, null);
-            return OperationResultSerializer.from(reply.getBody());
+            return buildOperationResult(reply);
         } catch (Exception e) {
             logger.error("Failed create", e);
             return new AccessError(null, e.toString());
@@ -646,7 +650,7 @@ public class HttpApiClient extends WeaveApiClientV1 {
                 params.put("options", Utils.getWriteOptionsJsonAdapter().toJson(options));
             }
             HttpReply reply = authPost(requestType, session, url, params, options != null ? options.getWriteTimeoutSec() : null);
-            return OperationResultSerializer.from(reply.getBody());
+            return buildOperationResult(reply);
         } catch (Exception e) {
             logger.error("Failed write", e);
             return new AccessError(null, e.toString());
@@ -675,7 +679,7 @@ public class HttpApiClient extends WeaveApiClientV1 {
                 params.put("options", Utils.getGson().toJson(options));
             }
             HttpReply reply = authPost(requestType, session, url, params, options != null ? options.getReadTimeoutSec() : null);
-            return OperationResultSerializer.from(reply.getBody());
+            return buildOperationResult(reply);
         } catch (Exception e) {
             logger.error("Failed read", e);
             return new AccessError(null, e.toString());
@@ -710,7 +714,7 @@ public class HttpApiClient extends WeaveApiClientV1 {
                 params.put("options", Utils.getGson().toJson(options));
             }
             HttpReply reply = authPost(requestType, session, url, params, options != null ? options.getReadTimeoutSec() : null);
-            return OperationResultSerializer.from(reply.getBody());
+            return buildOperationResult(reply);
         } catch (Exception e) {
             logger.error("Failed count", e);
             return new AccessError(null, e.toString());
@@ -737,7 +741,7 @@ public class HttpApiClient extends WeaveApiClientV1 {
                 params.put("options", Utils.getGson().toJson(options));
             }
             HttpReply reply = authPost(RequestType.delete, session, url, params, null);
-            return OperationResultSerializer.from(reply.getBody());
+            return buildOperationResult(reply);
         } catch (Exception e) {
             logger.error("Failed delete", e);
             return new AccessError(null, e.toString());
@@ -765,7 +769,7 @@ public class HttpApiClient extends WeaveApiClientV1 {
                 params.put("options", Utils.getGson().toJson(options));
             }
             HttpReply reply = authPost(requestType, session, url, params, options != null ? options.getReadTimeoutSec() : null);
-            return OperationResultSerializer.from(reply.getBody());
+            return buildOperationResult(reply);
         } catch (Exception e) {
             logger.error("Failed reading hashes", e);
             return new AccessError(null, e.toString());
@@ -795,7 +799,7 @@ public class HttpApiClient extends WeaveApiClientV1 {
                 params.put("options", Utils.getGson().toJson(options));
             }
             HttpReply reply = authPost(requestType, session, url, params, options != null ? options.getReadTimeoutSec() : null);
-            return OperationResultSerializer.from(reply.getBody());
+            return buildOperationResult(reply);
         } catch (Exception e) {
             logger.error("Failed download table", e);
             return new AccessError(null, e.toString());
@@ -819,7 +823,7 @@ public class HttpApiClient extends WeaveApiClientV1 {
                 params.put("options", Utils.getGson().toJson(options));
             }
             HttpReply reply = authPost(requestType, session, url, params, options != null ? options.getReadTimeoutSec() : null);
-            return OperationResultSerializer.from(reply.getBody());
+            return buildOperationResult(reply);
         } catch (Exception e) {
             logger.error("Failed download dataset", e);
             return new AccessError(null, e.toString());
@@ -860,7 +864,7 @@ public class HttpApiClient extends WeaveApiClientV1 {
                 params.put("options", Utils.getGson().toJson(options));
             }
             HttpReply reply = authPost(requestType, session, url, params, options != null ? options.getReadTimeoutSec() : null);
-            return OperationResultSerializer.from(reply.getBody());
+            return buildOperationResult(reply);
         } catch (Exception e) {
             logger.error("Failed publish", e);
             return new AccessError(null, e.toString());
@@ -884,7 +888,7 @@ public class HttpApiClient extends WeaveApiClientV1 {
             params.put("active", active);
 
             HttpReply reply = authPost(requestType, session, url, params, null);
-            return OperationResultSerializer.from(reply.getBody());
+            return buildOperationResult(reply);
         } catch (Exception e) {
             logger.error("Failed enable product", e);
             return new AccessError(null, e.toString());
@@ -908,7 +912,7 @@ public class HttpApiClient extends WeaveApiClientV1 {
                 params.put("options", Utils.getGson().toJson(options));
             }
             HttpReply reply = authPost(requestType, session, url, params, options != null ? options.getTimeoutSec() : null);
-            return OperationResultSerializer.from(reply.getBody());
+            return buildOperationResult(reply);
         } catch (Exception e) {
             logger.error("Failed task run", e);
             return new AccessError(null, e.toString());
@@ -944,7 +948,7 @@ public class HttpApiClient extends WeaveApiClientV1 {
                 params.put("options", Utils.getGson().toJson(options));
             }
             HttpReply reply = authPost(requestType, session, url, params, options != null ? options.getComputeTimeoutSec() : null);
-            return OperationResultSerializer.from(reply.getBody());
+            return buildOperationResult(reply);
         } catch (Exception e) {
             logger.error("Failed publish", e);
             return new AccessError(null, e.toString());
@@ -975,7 +979,7 @@ public class HttpApiClient extends WeaveApiClientV1 {
 
             //TODO: HTTP support, register onData event, perioding polling
 
-            return OperationResultSerializer.from(reply.getBody());
+            return buildOperationResult(reply);
         } catch (Exception e) {
             logger.error("Failed subscribe", e);
             return new AccessError(null, e.toString());
@@ -996,7 +1000,7 @@ public class HttpApiClient extends WeaveApiClientV1 {
             params.put("account", session.getAccount());
             params.put("subscriptionId", subscriptionId);
             HttpReply reply = authPost(requestType, session, url, params, null);
-            return OperationResultSerializer.from(reply.getBody());
+            return buildOperationResult(reply);
         } catch (Exception e) {
             logger.error("Failed unsubscribe", e);
             return new AccessError(null, e.toString());
@@ -1212,7 +1216,7 @@ public class HttpApiClient extends WeaveApiClientV1 {
             params.put("request", request);
             params.put("args", args);
             HttpReply reply = authPost(requestType, session, url, params, timeoutSec);
-            return OperationResultSerializer.from(reply.getBody());
+            return buildOperationResult(reply);
         } catch (Exception e) {
             logger.error("Failed plugin call", e);
             return new AccessError(null, e.toString());
@@ -1243,7 +1247,7 @@ public class HttpApiClient extends WeaveApiClientV1 {
                 params.put("options", Utils.getGson().toJson(options));
             }
             HttpReply reply = authPost(requestType, session, url, params, options != null ? options.getReadTimeoutSec() : null);
-            return OperationResultSerializer.from(reply.getBody());
+            return buildOperationResult(reply);
         } catch (Exception e) {
             logger.error("Failed generating proof", e);
             return new AccessError(null, e.toString());
@@ -1269,7 +1273,7 @@ public class HttpApiClient extends WeaveApiClientV1 {
                 params.put("options", Utils.getGson().toJson(options));
             }
             HttpReply reply = authPost(requestType, session, url, params, options != null ? options.getReadTimeoutSec() : null);
-            return OperationResultSerializer.from(reply.getBody());
+            return buildOperationResult(reply);
         } catch (Exception e) {
             logger.error("Failed generating proof", e);
             return new AccessError(null, e.toString());
@@ -1292,7 +1296,7 @@ public class HttpApiClient extends WeaveApiClientV1 {
             params.put("table", table);
 
             HttpReply reply = authPost(requestType, session, url, params, null);
-            return OperationResultSerializer.from(reply.getBody());
+            return buildOperationResult(reply);
         } catch (Exception e) {
             logger.error("Failed reading hash", e);
             return new AccessError(null, e.toString());
@@ -1315,7 +1319,7 @@ public class HttpApiClient extends WeaveApiClientV1 {
             params.put("table", table);
 
             HttpReply reply = authPost(requestType, session, url, params, null);
-            return OperationResultSerializer.from(reply.getBody());
+            return buildOperationResult(reply);
         } catch (Exception e) {
             logger.error("Failed reading proofs", e);
             return new AccessError(null, e.toString());
@@ -1345,7 +1349,7 @@ public class HttpApiClient extends WeaveApiClientV1 {
                 params.put("options", Utils.getGson().toJson(options));
             }
             HttpReply reply = authPost(requestType, session, url, params, options != null ? options.getReadTimeoutSec() : null);
-            return OperationResultSerializer.from(reply.getBody());
+            return buildOperationResult(reply);
         } catch (Exception e) {
             logger.error("Failed MPC", e);
             return new AccessError(null, e.toString());
@@ -1378,7 +1382,7 @@ public class HttpApiClient extends WeaveApiClientV1 {
                 params.put("options", Utils.getGson().toJson(options));
             }
             HttpReply reply = authPost(requestType, session, url, params, options != null ? options.getReadTimeoutSec() : null);
-            return OperationResultSerializer.from(reply.getBody());
+            return buildOperationResult(reply);
         } catch (Exception e) {
             logger.error("Failed MPC protocol init", e);
             return new AccessError(null, e.toString());
@@ -1400,7 +1404,7 @@ public class HttpApiClient extends WeaveApiClientV1 {
             params.put("computationId", computationId);
             params.put("message", message);
             HttpReply reply = authPost(requestType, session, url, params, null);
-            return OperationResultSerializer.from(reply.getBody());
+            return buildOperationResult(reply);
         } catch (Exception e) {
             logger.error("Failed MPC protocol call", e);
             return new AccessError(null, e.toString());
@@ -1423,7 +1427,7 @@ public class HttpApiClient extends WeaveApiClientV1 {
             params.put("table", table);
             params.put("pre", pre.toJson());
             HttpReply reply = authPost(requestType, session, url, params, null);
-            return OperationResultSerializer.from(reply.getBody());
+            return buildOperationResult(reply);
         } catch (Exception e) {
             logger.error("Failed MPC protocol call", e);
             return new AccessError(null, e.toString());
@@ -1445,7 +1449,7 @@ public class HttpApiClient extends WeaveApiClientV1 {
             params.put("scope", scope);
             params.put("table", table);
             HttpReply reply = authPost(requestType, session, url, params, null);
-            return OperationResultSerializer.from(reply.getBody());
+            return buildOperationResult(reply);
         } catch (Exception e) {
             logger.error("Failed proxy reencrypt call", e);
             return new AccessError(null, e.toString());
@@ -1466,7 +1470,7 @@ public class HttpApiClient extends WeaveApiClientV1 {
             params.put("account", session.getAccount());
             params.put("blinded", blinded);
             HttpReply reply = authPost(requestType, session, url, params, null);
-            return OperationResultSerializer.from(reply.getBody());
+            return buildOperationResult(reply);
         } catch (Exception e) {
             logger.error("Failed blind signature call", e);
             return new AccessError(null, e.toString());
@@ -1702,7 +1706,7 @@ public class HttpApiClient extends WeaveApiClientV1 {
             params.put("taskId", taskId);
             HttpReply reply = authPost(requestType, session, url, params, null);
 
-            return OperationResultSerializer.from(reply.getBody());
+            return buildOperationResult(reply);
         } catch (Exception e) {
             logger.error("Failed compute", e);
             return new AccessError(null, e.toString());
@@ -1724,7 +1728,7 @@ public class HttpApiClient extends WeaveApiClientV1 {
             params.put("enable", enable);
             HttpReply reply = authPost(requestType, session, url, params, null);
 
-            return OperationResultSerializer.from(reply.getBody());
+            return buildOperationResult(reply);
         } catch (Exception e) {
             logger.error("Failed compute", e);
             return new AccessError(null, e.toString());
@@ -1746,7 +1750,7 @@ public class HttpApiClient extends WeaveApiClientV1 {
             params.put("metadata", metadata);
             HttpReply reply = authPost(requestType, session, url, params, null);
 
-            return OperationResultSerializer.from(reply.getBody());
+            return buildOperationResult(reply);
         } catch (Exception e) {
             logger.error("Failed compute", e);
             return new AccessError(null, e.toString());
@@ -1772,7 +1776,7 @@ public class HttpApiClient extends WeaveApiClientV1 {
 
             HttpReply reply = authPost(requestType, session, url, params, null);
 
-            return OperationResultSerializer.from(reply.getBody());
+            return buildOperationResult(reply);
         } catch (Exception e) {
             logger.error("Failed compute", e);
             return new AccessError(null, e.toString());
@@ -1800,7 +1804,7 @@ public class HttpApiClient extends WeaveApiClientV1 {
                 params.put("options", Utils.getGson().toJson(options));
             }
             HttpReply reply = authPost(requestType, session, url, params, null);
-            return OperationResultSerializer.from(reply.getBody());
+            return buildOperationResult(reply);
         } catch (Throwable t) {
             String message = String.format("Error getting history for filter=%s, options=%s, ex=%s",
                     Utils.getGson().toJson(filter),
@@ -1829,7 +1833,7 @@ public class HttpApiClient extends WeaveApiClientV1 {
                 params.put("filter", Utils.getGson().toJson(filter));
             }
             HttpReply reply = authPost(requestType, session, url, params, null);
-            return OperationResultSerializer.from(reply.getBody());
+            return buildOperationResult(reply);
         } catch (Throwable t) {
             String message = String.format("Error getting writers for filter=%s, table=%s, ex=%s",
                     Utils.getGson().toJson(filter),
@@ -1858,7 +1862,7 @@ public class HttpApiClient extends WeaveApiClientV1 {
                 params.put("filter", Utils.getGson().toJson(filter));
             }
             HttpReply reply = authPost(requestType, session, url, params, null);
-            return OperationResultSerializer.from(reply.getBody());
+            return buildOperationResult(reply);
         } catch (Throwable t) {
             String message = String.format("Error getting writer-tasks for filter=%s, table=%s, ex=%s",
                     Utils.getGson().toJson(filter),
@@ -1887,7 +1891,7 @@ public class HttpApiClient extends WeaveApiClientV1 {
                 params.put("filter", Utils.getGson().toJson(filter));
             }
             HttpReply reply = authPost(requestType, session, url, params, null);
-            return OperationResultSerializer.from(reply.getBody());
+            return buildOperationResult(reply);
         } catch (Throwable t) {
             String message = String.format("Error getting lineage for filter=%s, table=%s, ex=%s",
                     Utils.getGson().toJson(filter),
@@ -1919,7 +1923,7 @@ public class HttpApiClient extends WeaveApiClientV1 {
 
             HttpReply reply = authPost(requestType, session, url, params, options != null ? options.getTimeoutSec() : null);
 
-            return OperationResultSerializer.from(reply.getBody());
+            return buildOperationResult(reply);
         } catch (Exception e) {
             logger.error("Failed compute", e);
             return new AccessError(null, e.toString());
@@ -1947,7 +1951,7 @@ public class HttpApiClient extends WeaveApiClientV1 {
 
             HttpReply reply = authPost(requestType, session, url, params, options != null ? options.getOpTimeoutSec() : null);
 
-            return OperationResultSerializer.from(reply.getBody());
+            return buildOperationResult(reply);
         } catch (Exception e) {
             logger.error("Failed compute", e);
             return new AccessError(null, e.toString());
@@ -1973,7 +1977,7 @@ public class HttpApiClient extends WeaveApiClientV1 {
 
             HttpReply reply = authPost(requestType, session, url, params, options != null ? options.getOpTimeoutSec() : null);
 
-            return OperationResultSerializer.from(reply.getBody());
+            return buildOperationResult(reply);
         } catch (Exception e) {
             logger.error("Failed compute", e);
             return new AccessError(null, e.toString());
@@ -2000,7 +2004,7 @@ public class HttpApiClient extends WeaveApiClientV1 {
 
             HttpReply reply = authPost(requestType, session, url, params, options != null ? options.getTimeoutSec() : null);
 
-            return OperationResultSerializer.from(reply.getBody());
+            return buildOperationResult(reply);
         } catch (Exception e) {
             logger.error("Failed compute", e);
             return new AccessError(null, e.toString());
@@ -2023,7 +2027,7 @@ public class HttpApiClient extends WeaveApiClientV1 {
 
             HttpReply reply = authPost(requestType, session, url, params, null);
 
-            return OperationResultSerializer.from(reply.getBody());
+            return buildOperationResult(reply);
         } catch (Exception e) {
             logger.error("Failed compute", e);
             return new AccessError(null, e.toString());
@@ -2049,7 +2053,7 @@ public class HttpApiClient extends WeaveApiClientV1 {
 
             HttpReply reply = authPost(requestType, session, url, params, options != null ? options.getTimeoutSec() : null);
 
-            return OperationResultSerializer.from(reply.getBody());
+            return buildOperationResult(reply);
         } catch (Exception e) {
             logger.error("Failed compute", e);
             return new AccessError(null, e.toString());
@@ -2072,7 +2076,7 @@ public class HttpApiClient extends WeaveApiClientV1 {
 
             HttpReply reply = authPost(requestType, session, url, params, null);
 
-            return OperationResultSerializer.from(reply.getBody());
+            return buildOperationResult(reply);
         } catch (Exception e) {
             logger.error("Failed compute", e);
             return new AccessError(null, e.toString());
@@ -2099,7 +2103,7 @@ public class HttpApiClient extends WeaveApiClientV1 {
             params.put("data", Utils.getMapJsonAdapter().toJson(message.getData()));
 
             HttpReply reply = authPost(requestType, session, url, params, timeout);
-            return OperationResultSerializer.from(reply.getBody());
+            return buildOperationResult(reply);
         } catch (Exception e) {
             logger.error("Failed read", e);
             return new AccessError(null, e.toString());
@@ -2122,7 +2126,7 @@ public class HttpApiClient extends WeaveApiClientV1 {
             params.put("publicKey", publicKey);
 
             HttpReply reply = authPost(requestType, session, url, params, options.getOpTimeoutSec());
-            return OperationResultSerializer.from(reply.getBody());
+            return buildOperationResult(reply);
         } catch (Exception e) {
             logger.error("Failed create account", e);
             return new AccessError(null, e.toString());
@@ -2145,7 +2149,7 @@ public class HttpApiClient extends WeaveApiClientV1 {
             params.put("contractType", contractType);
 
             HttpReply reply = authPost(requestType, session, url, params, options.getOpTimeoutSec());
-            return OperationResultSerializer.from(reply.getBody());
+            return buildOperationResult(reply);
         } catch (Exception e) {
             logger.error("Failed deploy", e);
             return new AccessError(null, e.toString());
@@ -2183,7 +2187,7 @@ public class HttpApiClient extends WeaveApiClientV1 {
             params.put("signature", signature);
 
             HttpReply reply = authPost(requestType, session, url, params, options.getOpTimeoutSec());
-            return OperationResultSerializer.from(reply.getBody());
+            return buildOperationResult(reply);
         } catch (Exception e) {
             logger.error("Failed call", e);
             return new AccessError(null, e.toString());
@@ -2216,7 +2220,7 @@ public class HttpApiClient extends WeaveApiClientV1 {
             params.put("signature", signature);
 
             HttpReply reply = authPost(requestType, session, url, params, null);
-            return OperationResultSerializer.from(reply.getBody());
+            return buildOperationResult(reply);
         } catch (Exception e) {
             logger.error("Failed balance", e);
             return new AccessError(null, e.toString());
@@ -2251,7 +2255,7 @@ public class HttpApiClient extends WeaveApiClientV1 {
             params.put("signature", signature);
 
             HttpReply reply = authPost(requestType, session, url, params, null);
-            return OperationResultSerializer.from(reply.getBody());
+            return buildOperationResult(reply);
         } catch (Exception e) {
             logger.error("Failed balance", e);
             return new AccessError(null, e.toString());
@@ -2282,7 +2286,7 @@ public class HttpApiClient extends WeaveApiClientV1 {
             params.put("signature", signature);
 
             HttpReply reply = authPost(requestType, session, url, params, null);
-            return OperationResultSerializer.from(reply.getBody());
+            return buildOperationResult(reply);
         } catch (Exception e) {
             logger.error("Failed update fees", e);
             return new AccessError(null, e.toString());
@@ -2306,7 +2310,7 @@ public class HttpApiClient extends WeaveApiClientV1 {
             params.put("contractAddress", contractAddress);
 
             HttpReply reply = authPost(requestType, session, url, params, options.getOpTimeoutSec());
-            return OperationResultSerializer.from(reply.getBody());
+            return buildOperationResult(reply);
         } catch (Exception e) {
             logger.error("Failed retrieving contract state", e);
             return new AccessError(null, e.toString());
@@ -2330,7 +2334,7 @@ public class HttpApiClient extends WeaveApiClientV1 {
             params.put("block", block);
 
             HttpReply reply = authPost(requestType, session, url, params, options.getOpTimeoutSec());
-            return OperationResultSerializer.from(reply.getBody());
+            return buildOperationResult(reply);
         } catch (Exception e) {
             logger.error("Failed block broadcast", e);
             return new AccessError(null, e.toString());
@@ -2354,7 +2358,7 @@ public class HttpApiClient extends WeaveApiClientV1 {
             params.put("blocks", blocks);
 
             HttpReply reply = authPost(requestType, session, url, params, options.getOpTimeoutSec());
-            return OperationResultSerializer.from(reply.getBody());
+            return buildOperationResult(reply);
         } catch (Exception e) {
             logger.error("Failed chain broadcast", e);
             return new AccessError(null, e.toString());
@@ -2379,7 +2383,7 @@ public class HttpApiClient extends WeaveApiClientV1 {
             params.put("credentials", credentials);
 
             HttpReply reply = authPost(requestType, session, url, params, options.getOpTimeoutSec());
-            return OperationResultSerializer.from(reply.getBody());
+            return buildOperationResult(reply);
         } catch (Exception e) {
             logger.error("Failed credentials issuing", e);
             return new AccessError(null, e.toString());
@@ -2400,7 +2404,7 @@ public class HttpApiClient extends WeaveApiClientV1 {
             params.put("account", session.getAccount());
             params.put("credentials", credentials);
             HttpReply reply = authPost(requestType, session, url, params, options.getOpTimeoutSec());
-            return OperationResultSerializer.from(reply.getBody());
+            return buildOperationResult(reply);
         } catch (Exception e) {
             logger.error("Failed credentials verification", e);
             return new AccessError(null, e.toString());
@@ -2422,7 +2426,7 @@ public class HttpApiClient extends WeaveApiClientV1 {
             params.put("credentials", credentials);
             params.put("subject", subject);
             HttpReply reply = authPost(requestType, session, url, params, options.getOpTimeoutSec());
-            return OperationResultSerializer.from(reply.getBody());
+            return buildOperationResult(reply);
         } catch (Exception e) {
             logger.error("Failed create presentation", e);
             return new AccessError(null, e.toString());
@@ -2445,7 +2449,7 @@ public class HttpApiClient extends WeaveApiClientV1 {
             params.put("domain", domain);
             params.put("challenge", challenge);
             HttpReply reply = authPost(requestType, session, url, params, options.getOpTimeoutSec());
-            return OperationResultSerializer.from(reply.getBody());
+            return buildOperationResult(reply);
         } catch (Exception e) {
             logger.error("Failed presentation signing", e);
             return new AccessError(null, e.toString());
@@ -2468,7 +2472,7 @@ public class HttpApiClient extends WeaveApiClientV1 {
             params.put("domain", domain);
             params.put("challenge", challenge);
             HttpReply reply = authPost(requestType, session, url, params, options.getOpTimeoutSec());
-            return OperationResultSerializer.from(reply.getBody());
+            return buildOperationResult(reply);
         } catch (Exception e) {
             logger.error("Failed presentation signing", e);
             return new AccessError(null, e.toString());
@@ -2492,7 +2496,7 @@ public class HttpApiClient extends WeaveApiClientV1 {
                 params.put("table", table);
             }
             HttpReply reply = authPost(requestType, session, url, params, null);
-            return OperationResultSerializer.from(reply.getBody());
+            return buildOperationResult(reply);
         } catch (Exception e) {
             logger.error("Failed " + requestType.name(), e);
             return new AccessError(null, e.toString());
@@ -2505,7 +2509,7 @@ public class HttpApiClient extends WeaveApiClientV1 {
             String url = apiUrl + "/" + getClientVersion() + "/" + requestType.name();
             Map<String, Object> params = new HashMap<>(msg);
             HttpReply reply = authPost(requestType, session, url, params, null);
-            return OperationResultSerializer.from(reply.getBody());
+            return buildOperationResult(reply);
         } catch (Exception e) {
             logger.error("Failed forwarding", e);
             return new AccessError(null, e.toString());
@@ -2562,7 +2566,7 @@ public class HttpApiClient extends WeaveApiClientV1 {
             params.put("path", path);
             params.put("values", values);
             HttpReply reply = authPost(requestType, session, url, params, null);
-            return OperationResultSerializer.from(reply.getBody());
+            return buildOperationResult(reply);
         } catch (Exception e) {
             logger.error("Failed update config", e);
             return new AccessError(null, e.toString());
@@ -2584,7 +2588,7 @@ public class HttpApiClient extends WeaveApiClientV1 {
             params.put("targetAccount", account);
             params.put("roles", roles);
             HttpReply reply = authPost(requestType, session, url, params, null);
-            return OperationResultSerializer.from(reply.getBody());
+            return buildOperationResult(reply);
         } catch (Exception e) {
             logger.error("Failed grant role", e);
             return new AccessError(null, e.toString());
@@ -2609,7 +2613,7 @@ public class HttpApiClient extends WeaveApiClientV1 {
             params.put("roles", String.join(" ", roles));
             params.put("isSuperAdmin", isSuperAdmin ? 1 : 0);
             HttpReply reply = authPost(requestType, session, url, params, null);
-            return OperationResultSerializer.from(reply.getBody());
+            return buildOperationResult(reply);
         } catch (Exception e) {
             logger.error("Failed create account", e);
             return new AccessError(null, e.toString());
@@ -2626,7 +2630,7 @@ public class HttpApiClient extends WeaveApiClientV1 {
             RequestType requestType = RequestType.reset_config;
             String url = apiUrl + "/" + getClientVersion() + "/" + requestType.name();
             HttpReply reply = authPost(requestType, session, url, null, null);
-            return OperationResultSerializer.from(reply.getBody());
+            return buildOperationResult(reply);
         } catch (Exception e) {
             logger.error("Failed config reset", e);
             return new AccessError(null, e.toString());
@@ -2647,7 +2651,7 @@ public class HttpApiClient extends WeaveApiClientV1 {
             params.put("account", session.getAccount());
             params.put("amount", amount.toString());
             HttpReply reply = authPost(requestType, session, url, params, null);
-            return OperationResultSerializer.from(reply.getBody());
+            return buildOperationResult(reply);
         } catch (Exception e) {
             logger.error("Failed withdraw", e);
             return new AccessError(null, e.toString());
@@ -2672,7 +2676,7 @@ public class HttpApiClient extends WeaveApiClientV1 {
             params.put("address", address);
             params.put("signature", signature);
             HttpReply reply = authPost(requestType, session, url, params, null);
-            return OperationResultSerializer.from(reply.getBody());
+            return buildOperationResult(reply);
         } catch (Exception e) {
             logger.error("Failed withdraw authorize", e);
             return new AccessError(null, e.toString());
@@ -2696,7 +2700,7 @@ public class HttpApiClient extends WeaveApiClientV1 {
                 request.put("params", Utils.getGson().toJson(params));
             }
             HttpReply reply = authPost(requestType, session, url, request, null);
-            return OperationResultSerializer.from(reply.getBody());
+            return buildOperationResult(reply);
         } catch (Exception e) {
             logger.error("Failed retrieving upload API token", e);
             return new AccessError(null, e.toString());
@@ -2718,7 +2722,7 @@ public class HttpApiClient extends WeaveApiClientV1 {
             }
             logger.debug("Sending set threshold sig pub key request");
             HttpReply reply = authPost(requestType, session, url, request, options != null ? options.getThresholdSigTimeoutSec() : null);
-            return OperationResultSerializer.from(reply.getBody());
+            return buildOperationResult(reply);
         } catch (Exception e) {
             logger.error("Failed set threshold sig pub key", e);
             return new AccessError(null, e.toString());
@@ -2740,7 +2744,7 @@ public class HttpApiClient extends WeaveApiClientV1 {
             }
             logger.debug("Sending read threshold sig pub key request");
             HttpReply reply = authPost(requestType, session, url, request, options != null ? options.getThresholdSigTimeoutSec() : null);
-            return OperationResultSerializer.from(reply.getBody());
+            return buildOperationResult(reply);
         } catch (Exception e) {
             logger.error("Failed read threshold sig pub key", e);
             return new AccessError(null, e.toString());
@@ -2763,7 +2767,7 @@ public class HttpApiClient extends WeaveApiClientV1 {
                 params.put("options", Utils.getGson().toJson(options));
             }
             HttpReply reply = authPost(requestType, session, url, params, options != null ? options.getThresholdSigTimeoutSec() : null);
-            return OperationResultSerializer.from(reply.getBody());
+            return buildOperationResult(reply);
         } catch (Exception e) {
             logger.error("Failed threshold sig round 1", e);
             return new AccessError(null, e.toString());
@@ -2792,7 +2796,7 @@ public class HttpApiClient extends WeaveApiClientV1 {
                 params.put("options", Utils.getGson().toJson(options));
             }
             HttpReply reply = authPost(requestType, session, url, params, options != null ? options.getThresholdSigTimeoutSec() : null);
-            return OperationResultSerializer.from(reply.getBody());
+            return buildOperationResult(reply);
         } catch (Exception e) {
             logger.error("Failed threshold sig round 2", e);
             return new AccessError(null, e.toString());
@@ -2828,7 +2832,7 @@ public class HttpApiClient extends WeaveApiClientV1 {
             params.put("account", session.getAccount());
             params.put("passive_replies", queuedReplies);
             HttpReply reply = authPost(requestType, session, url, params, null);
-            return OperationResultSerializer.from(reply.getBody());
+            return buildOperationResult(reply);
         } catch (Exception e) {
             logger.error("Failed status", e);
             return new AccessError(null, e.toString());
