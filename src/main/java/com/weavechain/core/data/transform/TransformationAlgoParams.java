@@ -15,6 +15,8 @@ public class TransformationAlgoParams {
 
     private Encrypt.Params encryptParams;
 
+    private Redaction.Params redactionParams;
+
     public TransformationAlgoParams quantizationParams(Quantization.Params value) {
         this.quantizationParams = value;
         return this;
@@ -30,11 +32,17 @@ public class TransformationAlgoParams {
         return this;
     }
 
+    public TransformationAlgoParams redactionParams(Redaction.Params value) {
+        this.redactionParams = value;
+        return this;
+    }
+
     public TransformationAlgoParams copy() {
         return new TransformationAlgoParams(
                 quantizationParams,
                 noiseParams,
-                encryptParams
+                encryptParams,
+                redactionParams
         );
     }
 }

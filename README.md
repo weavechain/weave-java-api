@@ -4,14 +4,6 @@
 
 ### Usage
 
-### Repositories
-
-```
-mavenCentral()
-maven("https://jitpack.io")
-maven("https://hyperledger.jfrog.io/artifactory/besu-maven")
-```
-
 #### Gradle Groovy DSL
 
 ```
@@ -53,6 +45,15 @@ application {
 }
 ```
 
+#### Repositories
+
+```
+mavenCentral()
+maven("https://jitpack.io")
+maven("https://hyperledger.jfrog.io/artifactory/besu-maven")
+```
+
+
 #### Data read sample
 
 ```java
@@ -72,7 +73,6 @@ String table = "directory";
 
 ChainClientConfig cfg =  new ChainClientConfig()
         .organization(organization)
-        .seed(seed)
         .http(new HttpClientConfig()
                 .host(host)
                 .port(port)

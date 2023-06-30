@@ -6,6 +6,8 @@ public enum DataTransform {
 
     ERASURE,            //field value is blanked. Nulls and data type are preserved
 
+    REDACTION,          //field value is replaced. Nulls and data type are preserved
+
     HASHING,            //field value is hashed (SHA2). Nulls are preserved, result data type is string
 
     RANDOM_ID,          //field value is associated a random id. Nulls are preserved, result data type is long

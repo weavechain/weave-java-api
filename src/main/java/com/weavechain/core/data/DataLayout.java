@@ -140,6 +140,7 @@ public class DataLayout {
         transformationAlgo = new HashMap<>();
 
         transformationAlgo.put(DataTransform.ERASURE, new Erasure());
+        transformationAlgo.put(DataTransform.REDACTION, new Redaction());
         transformationAlgo.put(DataTransform.HASHING, new Hashing(MappingRepositories.INSTANCE.getHashesRepository()));
         transformationAlgo.put(DataTransform.RANDOM_ID, new RandomId(MappingRepositories.INSTANCE.getRandomIdsRepository()));
         transformationAlgo.put(DataTransform.LINKED_RANDOM_ID, new RandomId(MappingRepositories.INSTANCE.getLinkedRandomIdsRepository()));

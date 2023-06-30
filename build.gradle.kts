@@ -115,7 +115,7 @@ publishing {
         create<MavenPublication>("Maven") {
             groupId = "com.weavechain"
             artifactId = "api"
-            version = "1.1"
+            version = "1.2"
             from(components["java"])
         }
         withType<MavenPublication> {
